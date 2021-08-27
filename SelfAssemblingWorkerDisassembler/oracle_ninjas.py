@@ -76,7 +76,7 @@ class OracleNinjas(ActBase):
 
     def __init__(self, info):
         # Oracle kiting parameters
-        self.hallucination_safe_distance = 3
+        self.hallucination_safe_distance = 3.5
         self.hallucination_danger_distance: float = 2
         self.hallucination_snipe_distance = 3
         self.safe_distance = 4  # slow kiting below 4
@@ -268,9 +268,9 @@ class OracleNinjas(ActBase):
                 msg = "FIRE"
                 o(AbilityId.BEHAVIOR_PULSARBEAMON)
                 if o.weapon_cooldown == 0:
-                    o.smart(target)
+                    o.attack(target)
                 else:
-                    o.move(target.position)
+                    o.smart(target.position)
             else:
                 o.move(target.position)
             self.client.debug_text_world(msg, o.position3d, None, 16)

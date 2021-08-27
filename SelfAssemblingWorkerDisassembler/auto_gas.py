@@ -26,6 +26,7 @@ class AutoGas(BuildGas):
     async def dynamic_worker_count_calc(self) -> int:
         worker_count = self.cache.own(UnitTypeId.PROBE).amount
         base, remainder = divmod(worker_count, 22)
+        base *= 2
         if remainder > 12:
             base += 2
         elif remainder > 6:
