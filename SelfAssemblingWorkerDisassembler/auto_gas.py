@@ -24,14 +24,22 @@ class AutoGas(BuildGas):
             return floor(worker_count / 11)
 
     async def dynamic_worker_count_calc(self) -> int:
-        worker_count = self.cache.own(UnitTypeId.PROBE).amount
-        base, remainder = divmod(worker_count, 22)
-        base *= 2
-        if remainder > 12:
-            base += 2
-        elif remainder > 6:
-            base += 1
-        return base
+        # Wait until we have a pylon
+        pylon_count = self.cache.own(UnitTypeId.PYLON).amount
+        gateway_count = self.cache.own(UnitTypeId.GATEWAY).amount
+        if pylon_count is 0:
+            return 0
+        elif gateway_count is 0:
+            return 1
+        else:
+            worker_count = self.cache.own(UnitTypeId.PROBE).amount
+            base, remainder = divmod(worker_count, 22)
+            base *= 2
+            if remainder > 12:
+                base += 2
+            elif remainder > 6:
+                base += 1
+            return base
 
     async def base_count_calc(self) -> int:
         townhall_count = self.cache.own(UnitTypeId.NEXUS).amount

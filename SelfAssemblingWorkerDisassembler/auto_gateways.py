@@ -5,7 +5,7 @@ from sc2 import UnitTypeId
 
 
 class AutoGateways(GridBuilding):
-    """Builds barracks automatically when needed based on left over minerals or command centre count."""
+    """Builds gateways automatically when needed based on left over minerals or command centre count."""
 
     def __init__(self):
         self.TYPE = UnitTypeId.GATEWAY
@@ -35,13 +35,13 @@ class AutoGateways(GridBuilding):
         townhall_count = self.cache.own(
             {UnitTypeId.NEXUS}
         ).amount
-        return townhall_count * 2
+        return townhall_count * 3
 
     def mineral_dump(self) -> int:
         building_count = self.cache.own(
             {self.TYPE}).amount
         mineral_count = self.ai.minerals
 
-        if mineral_count >= 750:
+        if mineral_count >= 500:
             self.print(f"Minerals too high, requesting more gateways {mineral_count}")
             self.to_count = building_count + 1

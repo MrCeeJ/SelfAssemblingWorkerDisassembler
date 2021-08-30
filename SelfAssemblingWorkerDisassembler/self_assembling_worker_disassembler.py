@@ -1,4 +1,5 @@
 from SelfAssemblingWorkerDisassembler.auto_gateways import AutoGateways
+from SelfAssemblingWorkerDisassembler.auto_gas import AutoGas
 from SelfAssemblingWorkerDisassembler.auto_stargates import AutoStargates
 from SelfAssemblingWorkerDisassembler.dodge_ramp_attack import DodgeRampAttack
 from SelfAssemblingWorkerDisassembler.oracle_ninjas import OracleNinjas
@@ -20,28 +21,22 @@ def get_two_gate_stalker_plan():
              GridBuilding(UnitTypeId.PYLON, 1, priority=True), None),
         Step(UnitReady(UnitTypeId.PYLON, 1),
              GridBuilding(UnitTypeId.GATEWAY, 1, priority=True)),
+        Step(UnitReady(UnitTypeId.GATEWAY, 0.7),
+             GridBuilding(UnitTypeId.GATEWAY, 2)),
         Step(UnitReady(UnitTypeId.GATEWAY, 1),
              GridBuilding(UnitTypeId.CYBERNETICSCORE, 1, priority=True)),
-        Step(UnitReady(UnitTypeId.GATEWAY, 0.8),
-             GridBuilding(UnitTypeId.GATEWAY, 2)),
-        Step(UnitExists(UnitTypeId.GATEWAY, 1, include_not_ready=True),
-             BuildGas(1), None),
-        Step(UnitExists(UnitTypeId.GATEWAY, 2, include_not_ready=True),
-             BuildGas(2), None),
-        Step(UnitExists(UnitTypeId.GATEWAY, 1),
+        Step(UnitReady(UnitTypeId.GATEWAY, 0.6),  # todo: Figure out why the cybercore waits for this to finish
              GridBuilding(UnitTypeId.PYLON, 2)),
         Step(UnitReady(UnitTypeId.CYBERNETICSCORE, 1),
              GridBuilding(UnitTypeId.STARGATE, 1, priority=True)),
         Step(UnitReady(UnitTypeId.STARGATE, 0.5),
              Tech(UpgradeId.WARPGATERESEARCH)),
-        # Step(UnitReady(UnitTypeId.STARGATE, 0.5),
-        #      Expand(1, priority=True)),
-        Step(Supply(36),
-             GridBuilding(UnitTypeId.PYLON, 3)),
-        Step(UnitReady(UnitTypeId.NEXUS, 2),
-             GridBuilding(UnitTypeId.TWILIGHTCOUNCIL, 1)),
+        # Step(Supply(36),
+        #      GridBuilding(UnitTypeId.PYLON, 3)),
         Step(UnitReady(UnitTypeId.NEXUS, 2),
              GridBuilding(UnitTypeId.FORGE, 1)),
+        Step(UnitReady(UnitTypeId.FORGE, 1),
+             GridBuilding(UnitTypeId.TWILIGHTCOUNCIL, 1)),
         Step(UnitReady(UnitTypeId.NEXUS, 3),
              GridBuilding(UnitTypeId.FLEETBEACON, 1)),
     ]
@@ -214,8 +209,8 @@ def get_unit_plan():
         ProtossUnit(UnitTypeId.ZEALOT, 1),
         ProtossUnit(UnitTypeId.SENTRY, 1),
         ProtossUnit(UnitTypeId.STALKER, 100),
-        Step(UnitExists(UnitTypeId.ORACLE, 3), ProtossUnit(UnitTypeId.VOIDRAY, 3, priority=True)),
-        Step(UnitExists(UnitTypeId.VOIDRAY, 3), ProtossUnit(UnitTypeId.TEMPEST, 3, priority=True)),
+        Step(UnitExists(UnitTypeId.ORACLE, 3), ProtossUnit(UnitTypeId.VOIDRAY, 12, priority=True)),
+        # Step(UnitExists(UnitTypeId.VOIDRAY, 3), ProtossUnit(UnitTypeId.TEMPEST, 3, priority=True)),
         Step(UnitExists(UnitTypeId.SENTRY, 1), StayAtHomeSentry()),
     )
 
@@ -226,7 +221,7 @@ def get_scaling_plan(self):
         AutoPylon(),
         # Step(RequireCustom(expand_function(self)), Expand(2)),
         # AutoExpand(),  # wtf? why not working?
-        # AutoGas(),
+        AutoGas(),
         AutoGateways(),
         AutoStargates(),
     )
@@ -246,6 +241,7 @@ def get_upgrade_plan():
         Step(UnitReady(UnitTypeId.TWILIGHTCOUNCIL), Tech(UpgradeId.PROTOSSGROUNDWEAPONSLEVEL3)),
         Step(UnitReady(UnitTypeId.TWILIGHTCOUNCIL), Tech(UpgradeId.PROTOSSAIRARMORSLEVEL3)),
         Step(UnitReady(UnitTypeId.TWILIGHTCOUNCIL), Tech(UpgradeId.PROTOSSAIRWEAPONSLEVEL1)),
+        Step(UnitReady(UnitTypeId.FLEETBEACON), Tech(UpgradeId.VOIDRAYSPEEDUPGRADE)),
         Step(UnitReady(UnitTypeId.FLEETBEACON), Tech(UpgradeId.PROTOSSAIRWEAPONSLEVEL2)),
         Step(UnitReady(UnitTypeId.FLEETBEACON), Tech(UpgradeId.PROTOSSAIRWEAPONSLEVEL3)),
         Step(UnitReady(UnitTypeId.TWILIGHTCOUNCIL), Tech(UpgradeId.PROTOSSGROUNDARMORSLEVEL2)),
@@ -307,12 +303,13 @@ class SelfAssemblingWorkerDisassembler(KnowledgeBot):
                 scaling_plan,
                 upgrade_plan,
                 expansion_plan,
-                gas_plan,
+                # gas_plan,
             ),
             SequentialList(
                 PlanZoneDefense(),
                 RestorePower(),
                 DistributeWorkers(),
+                Step(None, SpeedMining(), lambda ai: ai.client.game_step > 5),
                 PlanZoneGather(),
                 OracleNinjas(self.game_info),
                 Step(UnitReady(UnitTypeId.ORACLE, 0.5), PlanZoneAttack(3)),
